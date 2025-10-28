@@ -379,21 +379,26 @@
         
         /* СТРОКИ ДАННЫХ */
         .data-row {
-            display: grid;
-            gap: 10px;
-            margin-bottom: 10px;
-            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
             background: #f9f9f9;
             border-radius: 6px;
-            align-items: center;
+            border-left: 4px solid #667eea;
+            font-size: 13px;
         }
         
         .vehicle-row {
+            display: grid;
             grid-template-columns: 2fr 100px 100px 60px;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
         }
         
         .task-row {
-            grid-template-columns: 40px 2fr 1.5fr 120px 80px 60px;
+            border-left-color: #667eea;
         }
         
         .task-row.closed {
@@ -402,7 +407,8 @@
         }
         
         .bottleneck-row {
-            grid-template-columns: 2fr 1.5fr 2fr 1.5fr 80px 60px;
+            border-left-color: #ffc107;
+            background: #fff9e6;
         }
         
         .bottleneck-row.closed {
@@ -410,7 +416,8 @@
         }
         
         .growth-row {
-            grid-template-columns: 2fr 2fr 1.5fr 80px 60px;
+            border-left-color: #28a745;
+            background: #e8f5e9;
         }
         
         .growth-row.closed {
@@ -419,14 +426,102 @@
         
         .data-row input,
         .data-row select {
-            padding: 8px;
-            font-size: 13px;
+            padding: 6px 8px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        .data-row-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
         }
         
         .btn-small {
             padding: 6px 12px;
             font-size: 12px;
             border-radius: 4px;
+        }
+        
+        .readiness-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .readiness-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .readiness-criteria {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .readiness-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .readiness-label {
+            font-size: 13px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .readiness-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .readiness-btn {
+            padding: 6px 16px;
+            border: 2px solid;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .readiness-btn-yes {
+            border-color: #48bb78;
+            color: #48bb78;
+        }
+        
+        .readiness-btn-yes.active {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .readiness-btn-yes:hover:not(.active) {
+            background: #e6ffed;
+        }
+        
+        .readiness-btn-no {
+            border-color: #f56565;
+            color: #f56565;
+        }
+        
+        .readiness-btn-no.active {
+            background: #f56565;
+            color: white;
+        }
+        
+        .readiness-btn-no:hover:not(.active) {
+            background: #fff5f5;
         }
         
         .btn-add {
@@ -685,6 +780,28 @@
             50% { opacity: 0.7; }
         }
         
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
         .timer-value.warning-30 {
             color: #ffc107;
         }
@@ -847,9 +964,14 @@
     <div class="container">
         <!-- ВЫБОР УЧАСТНИКОВ -->
         <div class="card">
-            <div class="card-title">
-                ✅ Шаг 1: Выберите участников встречи
-                <span class="badge badge-info" id="selectedCount">0 выбрано</span>
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    ✅ Шаг 1: Выберите участников встречи
+                    <span class="badge badge-info" id="selectedCount">0 выбрано</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary btn-small" onclick="showEmployeeManager()">⚙️ Управление сотрудниками</button>
+                </div>
             </div>
             
             <div class="quick-fill-btns">
@@ -872,7 +994,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Дата:</label>
-                    <input type="date" id="meetingDate">
+                    <input type="date" id="meetingDate" onchange="updateWorkingDays()">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Время начала:</label>
@@ -889,6 +1011,31 @@
             </div>
         </div>
         
+        <!-- СЧЁТЧИК РАБОЧИХ ДНЕЙ -->
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div style="text-align: center;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 15px; opacity: 0.9;">📊 РАБОЧИЕ ДНИ МЕСЯЦА (ПН-СБ)</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 28px; font-weight: 700;" id="workingDaysTotal">0</div>
+                        <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Всего в месяце</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.25); padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 28px; font-weight: 700; color: #ffd700;" id="workingDaysPassed">0</div>
+                        <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Прошло</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 28px; font-weight: 700; color: #90EE90;" id="workingDaysLeft">0</div>
+                        <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Осталось</div>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px;">
+                    <div style="font-size: 24px; font-weight: 700;" id="workingDaysPercent">0%</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-top: 3px;">выполнено месяца</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- ФОКУСЫ И ЦЕЛИ -->
         <div class="card">
             <div class="card-title">
@@ -896,17 +1043,17 @@
             </div>
             
             <div style="margin-bottom: 20px;">
-                <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">🔴 ФОКУСЫ</h4>
-                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">На чём сосредоточены прямо сейчас</p>
-                <div id="focusesContainer"></div>
-                <button class="btn-add" onclick="addFocus()">+ Добавить фокус</button>
-            </div>
-            
-            <div>
                 <h4 style="color: #28a745; margin-bottom: 10px; font-size: 16px;">🟢 ЦЕЛИ</h4>
                 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Куда движемся в перспективе</p>
                 <div id="goalsContainer"></div>
                 <button class="btn-add" onclick="addGoal()">+ Добавить цель</button>
+            </div>
+            
+            <div>
+                <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">🔴 ФОКУСЫ</h4>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">На чём сосредоточены прямо сейчас</p>
+                <div id="focusesContainer"></div>
+                <button class="btn-add" onclick="addFocus()">+ Добавить фокус</button>
             </div>
         </div>
         
@@ -920,41 +1067,115 @@
             <div class="attendance-compact" id="attendanceList"></div>
         </div>
         
-        <!-- НЕЗАКРЫТЫЕ ВОПРОСЫ -->
-        <div class="card" id="openIssuesCard" style="display: none;">
+        <!-- ОЦЕНКА ПОДГОТОВЛЕННОСТИ -->
+        <div class="card">
             <div class="card-title">
-                ⚠️ Незакрытые вопросы с прошлых встреч
-                <span class="badge badge-warning" id="openIssuesCount">0</span>
+                ⭐ Шаг 5: Оценка подготовленности сотрудников
+                <span id="readinessStats"></span>
             </div>
-            <div id="openIssuesContainer"></div>
+            
+            <div id="readinessContainer" style="display: grid; gap: 15px;"></div>
         </div>
         
-        <!-- ГРУППЫ ТРАНСПОРТА -->
-        <div class="card">
-            <div class="card-title">🚗 Группы транспорта - Мониторинг</div>
-            <div id="vehiclesContainer"></div>
-            <button class="btn-add" onclick="addVehicle()">+ Добавить группу</button>
+        <!-- ВСЕ ЗАДАЧИ/УЗКИЕ МЕСТА/ТОЧКИ РОСТА -->
+        <div class="card" id="openIssuesCard">
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    📋 Текущие задачи, узкие места и точки роста
+                    <span class="badge badge-info" id="openIssuesCount">0</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="openIssuesTypeFilter" onchange="filterOpenIssues()" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #ddd; font-size: 13px;">
+                        <option value="all">Все типы</option>
+                        <option value="task">✅ Задачи</option>
+                        <option value="bottleneck">🔴 Узкие места</option>
+                        <option value="growth">🟢 Точки роста</option>
+                    </select>
+                    <select id="openIssuesFilter" onchange="filterOpenIssues()" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #ddd; font-size: 13px;">
+                        <option value="all">Все участники</option>
+                    </select>
+                </div>
+            </div>
+            <div id="openIssuesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;"></div>
         </div>
         
-        <!-- ЗАДАЧИ -->
-        <div class="card">
-            <div class="card-title">✅ Задачи на сегодня</div>
-            <div id="tasksContainer"></div>
-            <button class="btn-add" onclick="addTask()">+ Добавить задачу</button>
+        <!-- АНАЛИТИКА УЧАСТНИКОВ -->
+        <div class="card" id="analyticsCard" style="display: none;">
+            <div class="card-title">📊 Аналитика участников</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #856404;">⏰ Опоздания</h4>
+                    <div id="analyticsLate" style="font-size: 12px;"></div>
+                </div>
+                <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0c5460;">🎤 Время выступлений</h4>
+                    <div id="analyticsSpeaking" style="font-size: 12px;"></div>
+                </div>
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #155724;">✅ Выполнение задач</h4>
+                    <div id="analyticsTasks" style="font-size: 12px;"></div>
+                </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 14px;">📈 Активность по задачам</h4>
+                <div id="analyticsActivity" style="font-size: 12px;"></div>
+            </div>
         </div>
         
-        <!-- УЗКИЕ МЕСТА -->
-        <div class="card">
-            <div class="card-title">🔴 Узкие места</div>
-            <div id="bottlenecksContainer"></div>
-            <button class="btn-add" onclick="addBottleneck()">+ Добавить узкое место</button>
-        </div>
-        
-        <!-- ТОЧКИ РОСТА -->
-        <div class="card">
-            <div class="card-title">🟢 Точки роста</div>
-            <div id="growthPointsContainer"></div>
-            <button class="btn-add" onclick="addGrowthPoint()">+ Добавить точку роста</button>
+        <!-- ФОРМЫ ДОБАВЛЕНИЯ В СТРОКУ -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+            
+            <!-- ФОРМА ЗАДАЧИ -->
+            <div class="card" style="margin: 0;">
+                <div class="card-title" style="background: #667eea; color: white; padding: 12px; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
+                    ✅ Добавить задачу
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="newTaskDescription" placeholder="Описание задачи" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <select id="newTaskResponsible" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                        <option value="">Ответственный...</option>
+                    </select>
+                    <input type="date" id="newTaskDeadline" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <button class="btn btn-primary" onclick="addTaskToIssues()" style="width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">+ Добавить задачу</button>
+                </div>
+            </div>
+            
+            <!-- ФОРМА УЗКОГО МЕСТА -->
+            <div class="card" style="margin: 0;">
+                <div class="card-title" style="background: #ffc107; color: #000; padding: 12px; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
+                    🔴 Добавить узкое место
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="newBottleneckDescription" placeholder="Описание проблемы" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <div style="position: relative;">
+                        <input type="text" id="newBottleneckBlockerInput" list="blockersList" placeholder="Кто/что блокирует (можно ввести новое)" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; width: 100%;">
+                        <datalist id="blockersList"></datalist>
+                    </div>
+                    <input type="text" id="newBottleneckSolution" placeholder="Решение" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <select id="newBottleneckResponsible" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                        <option value="">Ответственный...</option>
+                    </select>
+                    <button class="btn btn-warning" onclick="addBottleneckToIssues()" style="width: 100%; padding: 10px; background: #ffc107; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">+ Добавить узкое место</button>
+                </div>
+            </div>
+            
+            <!-- ФОРМА ТОЧКИ РОСТА -->
+            <div class="card" style="margin: 0;">
+                <div class="card-title" style="background: #28a745; color: white; padding: 12px; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
+                    🟢 Добавить точку роста
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="newGrowthDescription" placeholder="Что улучшить/развить" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <input type="text" id="newGrowthHow" placeholder="Как реализовать" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <select id="newGrowthResponsible" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                        <option value="">Ответственный...</option>
+                    </select>
+                    <button class="btn btn-success" onclick="addGrowthToIssues()" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">+ Добавить точку роста</button>
+                </div>
+            </div>
+            
         </div>
         
         <!-- НОВОВВЕДЕНИЯ -->
@@ -1009,6 +1230,40 @@
         </div>
     </div>
     
+    <!-- УПРАВЛЕНИЕ СОТРУДНИКАМИ -->
+    <div id="employeeManagerOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(4px);" onclick="hideEmployeeManager()"></div>
+    <div class="checklist-float" id="employeeManagerFloat" style="display: none; z-index: 1000; width: 500px; max-width: calc(100vw - 40px); left: 50%; right: auto; transform: translateX(-50%);">
+        <div class="checklist-header">
+            <h3>👥 Управление сотрудниками</h3>
+            <button class="checklist-close" onclick="hideEmployeeManager()">✕</button>
+        </div>
+        <div class="checklist-body">
+            <div style="margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                <h4 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">➕ Добавить нового сотрудника</h4>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newEmployeeName" placeholder="Введите ФИО" 
+                        style="flex: 1; padding: 12px 15px; border: none; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                        onkeypress="if(event.key==='Enter') addEmployee()">
+                    <button class="btn btn-success" onclick="addEmployee()" 
+                        style="padding: 12px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; white-space: nowrap;">
+                        ✓ Добавить
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 10px; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 14px; color: #666;">
+                    <strong>Всего сотрудников:</strong> <span id="employeeCount" style="color: #667eea; font-weight: 700; font-size: 16px;">0</span>
+                </div>
+                <input type="text" id="searchEmployees" placeholder="🔍 Поиск..." 
+                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 150px;"
+                    onkeyup="filterEmployeeList()">
+            </div>
+            
+            <div id="employeeListManager" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+    
     <script>
         // =============================
         // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -1027,6 +1282,7 @@
         let focuses = JSON.parse(localStorage.getItem('focuses')) || [];
         let goals = JSON.parse(localStorage.getItem('goals')) || [];
         let checklistItems = JSON.parse(localStorage.getItem('checklistItems')) || [];
+        let blockers = JSON.parse(localStorage.getItem('blockers')) || [];
         let selectedParticipants = JSON.parse(localStorage.getItem('lastParticipants')) || [];
         
         // =============================
@@ -1135,6 +1391,10 @@
             loadFocuses();
             loadGoals();
             loadChecklist();
+            loadFormSelectors();
+            loadReadinessAssessment();
+            updateWorkingDays();
+            updateAnalytics();
             
             addVehicle();
             addTask();
@@ -1143,6 +1403,20 @@
             
             document.querySelectorAll('input, textarea').forEach(el => {
                 el.addEventListener('focus', startTotalTimer, { once: true });
+            });
+            
+            // Закрытие модалок по Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const employeeManager = document.getElementById('employeeManagerFloat');
+                    const checklist = document.getElementById('checklistFloat');
+                    
+                    if (employeeManager.style.display === 'flex') {
+                        hideEmployeeManager();
+                    } else if (checklist.classList.contains('show')) {
+                        toggleChecklist();
+                    }
+                }
             });
         };
         
@@ -1182,6 +1456,7 @@
             updateSelectedCount();
             loadAttendanceList();
             loadSpeakerControls();
+            loadReadinessAssessment();
         }
         
         function toggleParticipant(empId) {
@@ -1200,6 +1475,7 @@
             updateSelectedCount();
             loadAttendanceList();
             loadSpeakerControls();
+            loadReadinessAssessment();
         }
         
         function updateSelectedCount() {
@@ -1316,6 +1592,100 @@
                 <span class="badge badge-success">✅ ${present}</span>
                 <span class="badge badge-warning">⏰ ${late}</span>
                 <span class="badge badge-danger">❌ ${absent}</span>
+            `;
+        }
+        
+        // =============================
+        // ОЦЕНКА ПОДГОТОВЛЕННОСТИ
+        // =============================
+        function loadReadinessAssessment() {
+            const container = document.getElementById('readinessContainer');
+            container.innerHTML = '';
+            
+            const selected = employees.filter(e => selectedParticipants.includes(e.id));
+            
+            if (selected.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Выберите участников встречи выше</p>';
+                return;
+            }
+            
+            selected.forEach(emp => {
+                if (!emp.readiness) {
+                    emp.readiness = {
+                        metrics: null,      // Метрики заполнены
+                        reports: null,      // Докладывает чётко
+                        speaks: null        // Говорит внятно
+                    };
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'readiness-card';
+                card.innerHTML = `
+                    <div class="readiness-name">👤 ${emp.name}</div>
+                    <div class="readiness-criteria">
+                        <div class="readiness-item">
+                            <span class="readiness-label">📊 Метрики заполнены</span>
+                            <div class="readiness-buttons">
+                                <button class="readiness-btn readiness-btn-yes ${emp.readiness.metrics === true ? 'active' : ''}" 
+                                    onclick="setReadiness(${emp.id}, 'metrics', true)">✓ Да</button>
+                                <button class="readiness-btn readiness-btn-no ${emp.readiness.metrics === false ? 'active' : ''}" 
+                                    onclick="setReadiness(${emp.id}, 'metrics', false)">✕ Нет</button>
+                            </div>
+                        </div>
+                        <div class="readiness-item">
+                            <span class="readiness-label">📢 Докладывает чётко</span>
+                            <div class="readiness-buttons">
+                                <button class="readiness-btn readiness-btn-yes ${emp.readiness.reports === true ? 'active' : ''}" 
+                                    onclick="setReadiness(${emp.id}, 'reports', true)">✓ Да</button>
+                                <button class="readiness-btn readiness-btn-no ${emp.readiness.reports === false ? 'active' : ''}" 
+                                    onclick="setReadiness(${emp.id}, 'reports', false)">✕ Нет</button>
+                            </div>
+                        </div>
+                        <div class="readiness-item">
+                            <span class="readiness-label">💬 Говорит внятно</span>
+                            <div class="readiness-buttons">
+                                <button class="readiness-btn readiness-btn-yes ${emp.readiness.speaks === true ? 'active' : ''}" 
+                                    onclick="setReadiness(${emp.id}, 'speaks', true)">✓ Да</button>
+                                <button class="readiness-btn readiness-btn-no ${emp.readiness.speaks === false ? 'active' : ''}" 
+                                    onclick="setReadiness(${emp.id}, 'speaks', false)">✕ Нет</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            updateReadinessStats();
+        }
+        
+        function setReadiness(empId, criterion, value) {
+            const emp = employees.find(e => e.id === empId);
+            if (emp) {
+                if (!emp.readiness) emp.readiness = {};
+                emp.readiness[criterion] = value;
+                localStorage.setItem('employees', JSON.stringify(employees));
+                loadReadinessAssessment();
+            }
+        }
+        
+        function updateReadinessStats() {
+            const selected = employees.filter(e => selectedParticipants.includes(e.id));
+            let totalReady = 0;
+            let totalCriteria = 0;
+            
+            selected.forEach(emp => {
+                if (emp.readiness) {
+                    if (emp.readiness.metrics === true) totalReady++;
+                    if (emp.readiness.reports === true) totalReady++;
+                    if (emp.readiness.speaks === true) totalReady++;
+                    totalCriteria += 3;
+                }
+            });
+            
+            const percentReady = totalCriteria > 0 ? Math.round((totalReady / totalCriteria) * 100) : 0;
+            
+            document.getElementById('readinessStats').innerHTML = `
+                <span class="badge badge-info" style="background: #667eea;">⭐ ${percentReady}% готовности</span>
             `;
         }
         
@@ -1488,25 +1858,86 @@
             
             document.getElementById('openIssuesCount').textContent = activeIssues.length;
             
-            if (activeIssues.length === 0) {
-                card.style.display = 'none';
-                return;
-            }
-            
             card.style.display = 'block';
             container.innerHTML = '';
             
+            if (activeIssues.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 40px;">Нет текущих задач. Используйте формы выше для добавления.</p>';
+                return;
+            }
+            
+            // Собираем всех ответственных для фильтра
+            const responsibleList = [...new Set(activeIssues.map(i => i.responsible).filter(r => r))].sort();
+            const filterSelect = document.getElementById('openIssuesFilter');
+            const currentFilter = filterSelect.value;
+            filterSelect.innerHTML = '<option value="all">Все участники</option>';
+            responsibleList.forEach(name => {
+                filterSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+            filterSelect.value = currentFilter;
+            
             activeIssues.forEach(issue => {
                 const item = document.createElement('div');
-                item.style.cssText = 'background: #fff3cd; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #ffc107;';
+                item.className = 'data-row open-issue-item';
+                item.setAttribute('data-responsible', issue.responsible || '');
+                item.setAttribute('data-type', issue.type || 'task');
+                
+                let bgColor, borderColor, icon, typeLabel, detailsHTML;
+                
+                if (issue.type === 'task' || !issue.type) {
+                    bgColor = '#e3f2fd';
+                    borderColor = '#667eea';
+                    icon = '✅';
+                    typeLabel = 'Задача';
+                    detailsHTML = issue.deadline ? `<div style="font-size: 11px; color: #666;">📅 До ${new Date(issue.deadline).toLocaleDateString()}</div>` : '';
+                } else if (issue.type === 'bottleneck') {
+                    bgColor = '#fff3cd';
+                    borderColor = '#ffc107';
+                    icon = '🔴';
+                    typeLabel = 'Узкое место';
+                    detailsHTML = `
+                        ${issue.blocker ? `<div style="font-size: 11px; color: #666;">❗ Блокирует: ${issue.blocker}</div>` : ''}
+                        ${issue.solution ? `<div style="font-size: 11px; color: #666;">💡 Решение: ${issue.solution}</div>` : ''}
+                    `;
+                } else if (issue.type === 'growth') {
+                    bgColor = '#e8f5e9';
+                    borderColor = '#28a745';
+                    icon = '🟢';
+                    typeLabel = 'Точка роста';
+                    detailsHTML = issue.how ? `<div style="font-size: 11px; color: #666;">📋 Как: ${issue.how}</div>` : '';
+                }
+                
+                item.style.cssText = `background: ${bgColor}; border-left-color: ${borderColor}; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-left-width: 4px; border-radius: 6px; border-left-style: solid;`;
                 item.innerHTML = `
-                    <div style="margin-bottom: 8px;">
-                        <strong>${issue.description || issue.problem || 'Нет описания'}</strong><br>
-                        <span style="font-size: 12px; color: #666;">От ${new Date(issue.date).toLocaleDateString()} · Ответственный: ${issue.responsible}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <span style="background: ${borderColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">${icon} ${typeLabel}</span>
+                        <span style="font-size: 10px; color: #999;">От ${new Date(issue.date).toLocaleDateString()}</span>
                     </div>
-                    <button class="btn btn-success btn-small" onclick="closeIssue(${issue.id})">✅ Закрыть</button>
+                    <strong style="font-size: 13px;">${issue.description || issue.problem || 'Нет описания'}</strong>
+                    ${detailsHTML}
+                    <div style="font-size: 11px; color: #666; font-weight: 600;">👤 ${issue.responsible}</div>
+                    <button class="btn btn-success btn-small" style="width: 100%;" onclick="closeIssue(${issue.id})">✅ Закрыть</button>
                 `;
                 container.appendChild(item);
+            });
+            
+            // Применяем текущий фильтр
+            filterOpenIssues();
+        }
+        
+        function filterOpenIssues() {
+            const personFilter = document.getElementById('openIssuesFilter').value;
+            const typeFilter = document.getElementById('openIssuesTypeFilter').value;
+            const issues = document.querySelectorAll('.open-issue-item');
+            
+            issues.forEach(issue => {
+                const responsible = issue.getAttribute('data-responsible');
+                const type = issue.getAttribute('data-type');
+                
+                const personMatch = personFilter === 'all' || responsible === personFilter;
+                const typeMatch = typeFilter === 'all' || type === typeFilter;
+                
+                issue.style.display = (personMatch && typeMatch) ? '' : 'none';
             });
         }
         
@@ -1517,6 +1948,7 @@
                 issue.closedDate = new Date().toISOString();
                 localStorage.setItem('openIssues', JSON.stringify(openIssues));
                 loadOpenIssues();
+                updateAnalytics();
             }
         }
         
@@ -1578,6 +2010,11 @@
         }
         
         function loadGoals() {
+            const monthPercent = getCurrentMonthProgress();
+            loadGoalsWithPercent(monthPercent);
+        }
+        
+        function loadGoalsWithPercent(monthPercent) {
             const container = document.getElementById('goalsContainer');
             container.innerHTML = '';
             
@@ -1591,32 +2028,104 @@
             activeGoals.forEach(goal => {
                 const item = document.createElement('div');
                 item.className = 'goal-item';
+                item.style.cssText = 'background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #28a745;';
+                
+                // Расчёт процента выполнения и отставания
+                const plan = parseFloat(goal.plan) || 0;
+                const fact = parseFloat(goal.fact) || 0;
+                const goalPercent = plan > 0 ? Math.round((fact / plan) * 100) : 0;
+                const deviation = goalPercent - monthPercent;
+                
+                let deviationColor = '#6c757d';
+                let deviationText = '0%';
+                let deviationIcon = '⚪';
+                
+                if (deviation > 0) {
+                    deviationColor = '#28a745';
+                    deviationText = '+' + deviation + '%';
+                    deviationIcon = '🟢';
+                } else if (deviation < 0) {
+                    deviationColor = '#dc3545';
+                    deviationText = deviation + '%';
+                    deviationIcon = '🔴';
+                }
+                
                 item.innerHTML = `
-                    <div class="focus-goal-text">
-                        <strong>🟢 ${goal.text}</strong>
-                        <small>Добавлена: ${new Date(goal.addedDate).toLocaleDateString()}</small>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center;">
+                        <div>
+                            <input type="text" value="${goal.name || ''}" placeholder="Название цели" 
+                                onchange="updateGoalField(${goal.id}, 'name', this.value)"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-weight: 600;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 3px;">План месяца:</label>
+                            <input type="number" value="${goal.plan || ''}" placeholder="План" 
+                                onchange="updateGoalField(${goal.id}, 'plan', this.value); loadGoals();"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 3px;">Факт сейчас:</label>
+                            <input type="number" value="${goal.fact || ''}" placeholder="Факт" 
+                                onchange="updateGoalField(${goal.id}, 'fact', this.value); loadGoals();"
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: 600;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 3px;">Выполнено:</label>
+                            <div style="font-size: 20px; font-weight: 700; color: ${goalPercent >= 100 ? '#28a745' : '#667eea'};">${goalPercent}%</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 3px;">Отставание:</label>
+                            <div style="font-size: 18px; font-weight: 700; color: ${deviationColor};">${deviationIcon} ${deviationText}</div>
+                        </div>
                     </div>
-                    <div class="focus-goal-buttons">
-                        <button class="btn btn-success btn-small" onclick="closeGoal(${goal.id})">✅ Закрыть</button>
+                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <small style="color: #999;">Месяц выполнен на ${monthPercent}% · Добавлена: ${new Date(goal.addedDate).toLocaleDateString()}</small>
+                        <button class="btn btn-danger btn-small" onclick="closeGoal(${goal.id})" style="padding: 4px 10px;">✕ Закрыть</button>
                     </div>
                 `;
                 container.appendChild(item);
             });
         }
         
-        function addGoal() {
-            const text = prompt('Добавить ЦЕЛЬ (куда движемся в перспективе):');
-            if (text && text.trim()) {
-                const goal = {
-                    id: Date.now(),
-                    text: text.trim(),
-                    addedDate: new Date().toISOString(),
-                    closed: false
-                };
-                goals.push(goal);
+        function updateGoalField(goalId, field, value) {
+            const goal = goals.find(g => g.id === goalId);
+            if (goal) {
+                goal[field] = value;
                 localStorage.setItem('goals', JSON.stringify(goals));
-                loadGoals();
             }
+        }
+        
+        function getCurrentMonthProgress() {
+            // Получаем процент выполнения месяца из счётчика рабочих дней
+            const totalEl = document.getElementById('workingDaysTotal');
+            const passedEl = document.getElementById('workingDaysPassed');
+            
+            if (!totalEl || !passedEl) {
+                console.warn('workingDaysTotal or workingDaysPassed elements not found');
+                return 0;
+            }
+            
+            const total = parseInt(totalEl.textContent) || 1;
+            const passed = parseInt(passedEl.textContent) || 0;
+            
+            const percent = Math.round((passed / total) * 100);
+            console.log('Month progress:', passed, '/', total, '=', percent + '%');
+            
+            return percent;
+        }
+        
+        function addGoal() {
+            const goal = {
+                id: Date.now(),
+                name: '',
+                plan: '',
+                fact: '',
+                addedDate: new Date().toISOString(),
+                closed: false
+            };
+            goals.push(goal);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            loadGoals();
         }
         
         function closeGoal(goalId) {
@@ -1630,8 +2139,6 @@
                 }
             }
         }
-        
-        // =============================
         // ЧЕКЛИСТ КООРДИНАЦИИ
         // =============================
         function toggleChecklist() {
@@ -1705,6 +2212,213 @@
         }
         
         // =============================
+        // УПРАВЛЕНИЕ СОТРУДНИКАМИ
+        // =============================
+        function showEmployeeManager() {
+            const modal = document.getElementById('employeeManagerFloat');
+            const overlay = document.getElementById('employeeManagerOverlay');
+            modal.style.display = 'flex';
+            overlay.style.display = 'block';
+            loadEmployeeManager();
+            
+            // Фокус на поле ввода
+            setTimeout(() => {
+                document.getElementById('newEmployeeName').focus();
+            }, 100);
+        }
+        
+        function hideEmployeeManager() {
+            const modal = document.getElementById('employeeManagerFloat');
+            const overlay = document.getElementById('employeeManagerOverlay');
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+            
+            // Очистка поиска
+            const searchInput = document.getElementById('searchEmployees');
+            if (searchInput) {
+                searchInput.value = '';
+                filterEmployeeList();
+            }
+        }
+        
+        function loadEmployeeManager() {
+            const container = document.getElementById('employeeListManager');
+            const countElement = document.getElementById('employeeCount');
+            
+            if (countElement) {
+                countElement.textContent = employees.length;
+            }
+            
+            container.innerHTML = '';
+            
+            if (employees.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">👥</div>
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Нет сотрудников</div>
+                        <div style="font-size: 13px;">Добавьте первого сотрудника выше</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Сортируем по имени
+            const sortedEmployees = [...employees].sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+            
+            sortedEmployees.forEach(emp => {
+                const item = document.createElement('div');
+                item.className = 'employee-manager-item';
+                item.setAttribute('data-name', emp.name.toLowerCase());
+                item.style.cssText = `
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center; 
+                    padding: 15px; 
+                    background: white; 
+                    border-radius: 10px; 
+                    margin-bottom: 10px; 
+                    border: 2px solid #e9ecef;
+                    transition: all 0.2s ease;
+                    cursor: pointer;
+                `;
+                
+                item.onmouseover = function() {
+                    this.style.borderColor = '#667eea';
+                    this.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+                };
+                
+                item.onmouseout = function() {
+                    this.style.borderColor = '#e9ecef';
+                    this.style.boxShadow = 'none';
+                };
+                
+                item.innerHTML = `
+                    <div style="flex: 1;">
+                        <div style="font-size: 15px; font-weight: 600; color: #2d3748; margin-bottom: 4px;">
+                            ${emp.name}
+                        </div>
+                        <div style="font-size: 11px; color: #a0aec0;">
+                            ID: ${emp.id}
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteEmployee(${emp.id})" 
+                        style="padding: 8px 16px; font-size: 13px; border-radius: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span>🗑️</span>
+                        <span>Удалить</span>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function filterEmployeeList() {
+            const searchTerm = document.getElementById('searchEmployees').value.toLowerCase();
+            const items = document.querySelectorAll('.employee-manager-item');
+            
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+            });
+        }
+        
+        function addEmployee() {
+            const nameInput = document.getElementById('newEmployeeName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                nameInput.style.border = '2px solid #dc3545';
+                nameInput.placeholder = '❌ Введите ФИО сотрудника';
+                setTimeout(() => {
+                    nameInput.style.border = '';
+                    nameInput.placeholder = 'Введите ФИО';
+                }, 2000);
+                return;
+            }
+            
+            // Проверка на дубликат
+            if (employees.find(e => e.name.toLowerCase() === name.toLowerCase())) {
+                nameInput.style.border = '2px solid #ffc107';
+                nameInput.value = '';
+                nameInput.placeholder = '⚠️ Такой сотрудник уже есть';
+                setTimeout(() => {
+                    nameInput.style.border = '';
+                    nameInput.placeholder = 'Введите ФИО';
+                }, 2000);
+                return;
+            }
+            
+            const newEmployee = {
+                id: Date.now(),
+                name: name,
+                department: 'Без отдела'
+            };
+            
+            employees.push(newEmployee);
+            localStorage.setItem('employees', JSON.stringify(employees));
+            
+            // Анимация успеха
+            nameInput.style.border = '2px solid #28a745';
+            nameInput.value = '';
+            nameInput.placeholder = `✅ "${name}" добавлен!`;
+            
+            setTimeout(() => {
+                nameInput.style.border = '';
+                nameInput.placeholder = 'Введите ФИО';
+            }, 2000);
+            
+            loadEmployeeManager();
+            loadParticipantsSelector();
+            loadSelectOptions();
+        }
+        
+        function deleteEmployee(empId) {
+            const emp = employees.find(e => e.id === empId);
+            if (!emp) return;
+            
+            // Красивое подтверждение
+            const confirmMessage = `Вы действительно хотите удалить сотрудника?\n\n👤 ${emp.name}\n\n⚠️ Это действие нельзя отменить.\nСотрудник будет удалён из всех списков и истории встреч.`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Удаляем сотрудника
+            employees = employees.filter(e => e.id !== empId);
+            localStorage.setItem('employees', JSON.stringify(employees));
+            
+            // Удаляем из выбранных участников
+            selectedParticipants = selectedParticipants.filter(id => id !== empId);
+            localStorage.setItem('lastParticipants', JSON.stringify(selectedParticipants));
+            
+            loadEmployeeManager();
+            loadParticipantsSelector();
+            loadSelectOptions();
+            
+            // Показываем уведомление
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = `✅ "${emp.name}" удалён`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+        
+        // =============================
         // ДОБАВЛЕНИЕ СТРОК
         // =============================
         function addVehicle() {
@@ -1739,94 +2453,192 @@
             container.appendChild(row);
         }
         
-        function addTask() {
-            const container = document.getElementById('tasksContainer');
-            const num = container.children.length + 1;
-            const row = document.createElement('div');
-            row.className = 'data-row task-row';
+        // =============================
+        // ДОБАВЛЕНИЕ ЗАДАЧ/УЗКИХ МЕСТ/ТОЧЕК РОСТА
+        // =============================
+        
+        // =============================
+        // РАБОЧИЕ ДНИ МЕСЯЦА
+        // =============================
+        function updateWorkingDays() {
+            const dateInput = document.getElementById('meetingDate');
+            const currentDate = dateInput && dateInput.value ? new Date(dateInput.value) : new Date();
             
-            // Получаем список участников встречи
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Первый и последний день месяца
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            let totalWorkingDays = 0;
+            let passedWorkingDays = 0;
+            
+            // Подсчёт всех рабочих дней месяца (ПН-СБ, исключая ВС)
+            for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+                const dayOfWeek = d.getDay();
+                if (dayOfWeek !== 0) { // 0 = воскресенье
+                    totalWorkingDays++;
+                    
+                    // Если день уже прошёл
+                    if (d <= currentDate) {
+                        passedWorkingDays++;
+                    }
+                }
+            }
+            
+            const leftWorkingDays = totalWorkingDays - passedWorkingDays;
+            const percentComplete = Math.round((passedWorkingDays / totalWorkingDays) * 100);
+            
+            // Обновление UI
+            document.getElementById('workingDaysTotal').textContent = totalWorkingDays;
+            document.getElementById('workingDaysPassed').textContent = passedWorkingDays;
+            document.getElementById('workingDaysLeft').textContent = leftWorkingDays;
+            document.getElementById('workingDaysPercent').textContent = percentComplete + '%';
+            
+            // Возвращаем процент для использования в других функциях
+            return percentComplete;
+        }
+        
+        function loadFormSelectors() {
             const selected = employees.filter(e => selectedParticipants.includes(e.id));
-            const responsibleOptions = selected.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+            const options = selected.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
             
-            row.innerHTML = `
-                <input type="text" value="${num}" readonly style="background: #e9ecef; text-align: center;">
-                <input type="text" placeholder="Описание задачи">
-                <select>
-                    <option value="">Ответственный...</option>
-                    ${responsibleOptions}
-                </select>
-                <input type="date">
-                <button class="btn btn-success btn-small" onclick="toggleClosed(this)">✅</button>
-                <button class="btn btn-danger btn-small" onclick="this.parentElement.remove(); renumberTasks()">✕</button>
-            `;
-            container.appendChild(row);
-        }
-        
-        function toggleClosed(btn) {
-            const row = btn.closest('.data-row');
-            row.classList.toggle('closed');
-            btn.textContent = row.classList.contains('closed') ? '↩️' : '✅';
-        }
-        
-        function renumberTasks() {
-            const tasks = document.querySelectorAll('#tasksContainer .task-row');
-            tasks.forEach((task, index) => {
-                task.querySelector('input').value = index + 1;
+            document.getElementById('newTaskResponsible').innerHTML = '<option value="">Ответственный...</option>' + options;
+            document.getElementById('newBottleneckResponsible').innerHTML = '<option value="">Ответственный...</option>' + options;
+            document.getElementById('newGrowthResponsible').innerHTML = '<option value="">Ответственный...</option>' + options;
+            
+            // Загрузка списка блокираторов
+            const blockersList = document.getElementById('blockersList');
+            blockersList.innerHTML = '';
+            blockers.forEach(blocker => {
+                const option = document.createElement('option');
+                option.value = blocker;
+                blockersList.appendChild(option);
             });
         }
         
-        function addBottleneck() {
-            const container = document.getElementById('bottlenecksContainer');
-            const row = document.createElement('div');
-            row.className = 'data-row bottleneck-row';
+        function addTaskToIssues() {
+            const description = document.getElementById('newTaskDescription').value.trim();
+            const responsible = document.getElementById('newTaskResponsible').value;
+            const deadline = document.getElementById('newTaskDeadline').value;
             
-            // Список всех сотрудников для "Кто блокирует"
-            const allEmployeesOptions = employees.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+            if (!description) {
+                alert('Введите описание задачи');
+                return;
+            }
+            if (!responsible) {
+                alert('Выберите ответственного');
+                return;
+            }
             
-            // Список участников встречи для "Ответственный"
-            const selected = employees.filter(e => selectedParticipants.includes(e.id));
-            const responsibleOptions = selected.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+            const issue = {
+                id: Date.now(),
+                type: 'task',
+                description: description,
+                responsible: responsible,
+                deadline: deadline,
+                date: new Date().toISOString(),
+                closed: false
+            };
             
-            row.innerHTML = `
-                <input type="text" placeholder="Описание узкого места">
-                <select onchange="if(this.value==='custom'){this.style.display='none'; const inp=document.createElement('input'); inp.type='text'; inp.placeholder='Введите имя'; inp.style.padding='8px'; inp.style.fontSize='13px'; this.parentElement.insertBefore(inp, this.nextSibling);}" style="flex: 1;">
-                    <option value="">Кто блокирует...</option>
-                    ${allEmployeesOptions}
-                    <option value="custom">➕ Добавить не из списка</option>
-                </select>
-                <input type="text" placeholder="Решение">
-                <select>
-                    <option value="">Ответственный...</option>
-                    ${responsibleOptions}
-                </select>
-                <button class="btn btn-success btn-small" onclick="toggleClosed(this)">✅</button>
-                <button class="btn btn-danger btn-small" onclick="this.parentElement.remove()">✕</button>
-            `;
-            container.appendChild(row);
+            openIssues.push(issue);
+            localStorage.setItem('openIssues', JSON.stringify(openIssues));
+            
+            // Очистка формы
+            document.getElementById('newTaskDescription').value = '';
+            document.getElementById('newTaskResponsible').value = '';
+            document.getElementById('newTaskDeadline').value = '';
+            
+            loadOpenIssues();
+            updateAnalytics();
         }
         
-        function addGrowthPoint() {
-            const container = document.getElementById('growthPointsContainer');
-            const row = document.createElement('div');
-            row.className = 'data-row growth-row';
+        function addBottleneckToIssues() {
+            const description = document.getElementById('newBottleneckDescription').value.trim();
+            const blocker = document.getElementById('newBottleneckBlockerInput').value.trim();
+            const solution = document.getElementById('newBottleneckSolution').value.trim();
+            const responsible = document.getElementById('newBottleneckResponsible').value;
             
-            // Список участников встречи для "Ответственный"
-            const selected = employees.filter(e => selectedParticipants.includes(e.id));
-            const responsibleOptions = selected.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+            if (!description) {
+                alert('Введите описание узкого места');
+                return;
+            }
+            if (!responsible) {
+                alert('Выберите ответственного');
+                return;
+            }
             
-            row.innerHTML = `
-                <input type="text" placeholder="Что можно улучшить / развить">
-                <input type="text" placeholder="Как реализовать">
-                <select>
-                    <option value="">Ответственный...</option>
-                    ${responsibleOptions}
-                </select>
-                <button class="btn btn-success btn-small" onclick="toggleClosed(this)">✅</button>
-                <button class="btn btn-danger btn-small" onclick="this.parentElement.remove()">✕</button>
-            `;
-            container.appendChild(row);
+            // Добавляем нового блокиратора в список если его там нет
+            if (blocker && !blockers.includes(blocker)) {
+                blockers.push(blocker);
+                localStorage.setItem('blockers', JSON.stringify(blockers));
+                loadFormSelectors(); // Обновляем список
+            }
+            
+            const issue = {
+                id: Date.now(),
+                type: 'bottleneck',
+                description: description,
+                blocker: blocker,
+                solution: solution,
+                responsible: responsible,
+                date: new Date().toISOString(),
+                closed: false
+            };
+            
+            openIssues.push(issue);
+            localStorage.setItem('openIssues', JSON.stringify(openIssues));
+            
+            // Очистка формы
+            document.getElementById('newBottleneckDescription').value = '';
+            document.getElementById('newBottleneckBlockerInput').value = '';
+            document.getElementById('newBottleneckSolution').value = '';
+            document.getElementById('newBottleneckResponsible').value = '';
+            
+            loadOpenIssues();
+            updateAnalytics();
         }
+        
+        function addGrowthToIssues() {
+            const description = document.getElementById('newGrowthDescription').value.trim();
+            const how = document.getElementById('newGrowthHow').value.trim();
+            const responsible = document.getElementById('newGrowthResponsible').value;
+            
+            if (!description) {
+                alert('Введите что нужно улучшить');
+                return;
+            }
+            if (!responsible) {
+                alert('Выберите ответственного');
+                return;
+            }
+            
+            const issue = {
+                id: Date.now(),
+                type: 'growth',
+                description: description,
+                how: how,
+                responsible: responsible,
+                date: new Date().toISOString(),
+                closed: false
+            };
+            
+            openIssues.push(issue);
+            localStorage.setItem('openIssues', JSON.stringify(openIssues));
+            
+            // Очистка формы
+            document.getElementById('newGrowthDescription').value = '';
+            document.getElementById('newGrowthHow').value = '';
+            document.getElementById('newGrowthResponsible').value = '';
+            
+            loadOpenIssues();
+            updateAnalytics();
+        }
+        
+        // =============================
+        // ФИЛЬТРАЦИЯ ПО УЧАСТНИКАМ
+        // =============================
         
         // =============================
         // СОХРАНЕНИЕ ПРОТОКОЛА
@@ -1843,8 +2655,9 @@
                 facilitator: document.getElementById('facilitator').value,
                 secretary: document.getElementById('secretary').value,
                 focuses: focuses.filter(f => !f.closed).map(f => f.text),
-                goals: goals.filter(g => !g.closed).map(g => g.text),
+                goals: goals.filter(g => !g.closed),
                 attendance: [],
+                readiness: [],
                 vehicles: [],
                 tasks: [],
                 bottlenecks: [],
@@ -1868,6 +2681,19 @@
                     });
                     
                     emp.stats[status]++;
+                }
+            });
+            
+            // Собираем оценку подготовленности
+            const selectedEmps = employees.filter(e => selectedParticipants.includes(e.id));
+            selectedEmps.forEach(emp => {
+                if (emp.readiness) {
+                    meetingData.readiness.push({
+                        name: emp.name,
+                        metrics: emp.readiness.metrics,
+                        reports: emp.readiness.reports,
+                        speaks: emp.readiness.speaks
+                    });
                 }
             });
             
@@ -1966,11 +2792,15 @@
             localStorage.setItem('goals', JSON.stringify(goals));
             
             generateProtocolHTML(meetingData);
+            updateAnalytics(); // Обновляем аналитику
             
             alert('✅ Протокол сохранён!');
         }
         
         function generateProtocolHTML(data) {
+            // Получаем процент выполнения месяца
+            const monthPercent = getCurrentMonthProgress();
+            
             let html = `
                 <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #667eea; padding-bottom: 20px;">
                     <h1 style="color: #667eea;">ПРОТОКОЛ КООРДИНАЦИОННОЙ ВСТРЕЧИ №${meetings.length}</h1>
@@ -1982,24 +2812,67 @@
             if ((data.focuses && data.focuses.length > 0) || (data.goals && data.goals.length > 0)) {
                 html += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">`;
                 
-                if (data.focuses && data.focuses.length > 0) {
-                    html += `
-                        <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">🔴 ФОКУСЫ (текущие)</h3>
-                        <ul style="margin: 0 0 15px 20px; padding: 0;">
-                    `;
-                    data.focuses.forEach(focus => {
-                        html += `<li style="margin-bottom: 5px;"><strong>${focus}</strong></li>`;
-                    });
-                    html += '</ul>';
-                }
-                
                 if (data.goals && data.goals.length > 0) {
                     html += `
                         <h3 style="color: #28a745; margin-bottom: 10px; font-size: 16px;">🟢 ЦЕЛИ (перспектива)</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">Цель</th>
+                                    <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6; width: 100px;">План</th>
+                                    <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6; width: 100px;">Факт</th>
+                                    <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6; width: 100px;">Выполнено</th>
+                                    <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6; width: 120px;">Отставание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.goals.forEach(goal => {
+                        const plan = parseFloat(goal.plan) || 0;
+                        const fact = parseFloat(goal.fact) || 0;
+                        const goalPercent = plan > 0 ? Math.round((fact / plan) * 100) : 0;
+                        const deviation = goalPercent - monthPercent;
+                        
+                        let deviationColor = '#6c757d';
+                        let deviationText = '0%';
+                        let deviationIcon = '⚪';
+                        
+                        if (deviation > 0) {
+                            deviationColor = '#28a745';
+                            deviationText = '+' + deviation + '%';
+                            deviationIcon = '🟢';
+                        } else if (deviation < 0) {
+                            deviationColor = '#dc3545';
+                            deviationText = deviation + '%';
+                            deviationIcon = '🔴';
+                        }
+                        
+                        html += `
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 8px; border: 1px solid #dee2e6;"><strong>${goal.name || 'Без названия'}</strong></td>
+                                <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">${plan || '-'}</td>
+                                <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6; font-weight: 600;">${fact || '-'}</td>
+                                <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6; font-weight: 700; color: ${goalPercent >= 100 ? '#28a745' : '#667eea'};">${goalPercent}%</td>
+                                <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6; font-weight: 700; color: ${deviationColor};">${deviationIcon} ${deviationText}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                            </tbody>
+                        </table>
+                        <p style="font-size: 12px; color: #666; margin: 0;"><em>Месяц выполнен на ${monthPercent}%</em></p>
+                    `;
+                }
+                
+                if (data.focuses && data.focuses.length > 0) {
+                    html += `
+                        <h3 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">🔴 ФОКУСЫ (текущие)</h3>
                         <ul style="margin: 0 0 0 20px; padding: 0;">
                     `;
-                    data.goals.forEach(goal => {
-                        html += `<li style="margin-bottom: 5px;"><strong>${goal}</strong></li>`;
+                    data.focuses.forEach(focus => {
+                        html += `<li style="margin-bottom: 5px;"><strong>${focus}</strong></li>`;
                     });
                     html += '</ul>';
                 }
@@ -2019,6 +2892,53 @@
                     <p><strong>Отсутствовали:</strong> ${data.attendance.filter(a => a.status === 'absent').map(a => a.name).join(', ') || '-'}</p>
                 </div>
             `;
+            
+            if (data.readiness && data.readiness.length > 0) {
+                html += `
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: #667eea; margin-bottom: 12px;">⭐ ОЦЕНКА ПОДГОТОВЛЕННОСТИ</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Сотрудник</th>
+                                    <th style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">📊 Метрики</th>
+                                    <th style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">📢 Доклад</th>
+                                    <th style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">💬 Речь</th>
+                                    <th style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">Итого</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.readiness.forEach(r => {
+                    const metricsIcon = r.metrics === true ? '✅' : r.metrics === false ? '❌' : '⚪';
+                    const reportsIcon = r.reports === true ? '✅' : r.reports === false ? '❌' : '⚪';
+                    const speaksIcon = r.speaks === true ? '✅' : r.speaks === false ? '❌' : '⚪';
+                    
+                    let score = 0;
+                    if (r.metrics === true) score++;
+                    if (r.reports === true) score++;
+                    if (r.speaks === true) score++;
+                    
+                    const scoreColor = score === 3 ? '#28a745' : score >= 2 ? '#ffc107' : '#dc3545';
+                    
+                    html += `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>${r.name}</strong></td>
+                            <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center; font-size: 18px;">${metricsIcon}</td>
+                            <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center; font-size: 18px;">${reportsIcon}</td>
+                            <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center; font-size: 18px;">${speaksIcon}</td>
+                            <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center; font-weight: 700; color: ${scoreColor};">${score}/3</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
             
             if (data.vehicles.length > 0) {
                 html += `
@@ -2130,44 +3050,353 @@
         // =============================
         // НОВАЯ ВСТРЕЧА
         // =============================
+        
+        // =============================
+        // АНАЛИТИКА УЧАСТНИКОВ
+        // =============================
+        function updateAnalytics() {
+            const analyticsCard = document.getElementById('analyticsCard');
+            if (!analyticsCard) return;
+            
+            // Показываем аналитику только если есть данные
+            const hasData = meetings.length > 0;
+            analyticsCard.style.display = hasData ? 'block' : 'none';
+            
+            if (!hasData) return;
+            
+            // Собираем статистику по последним 10 встречам
+            const recentMeetings = meetings.slice(-10);
+            
+            // 1. ОПОЗДАНИЯ
+            const lateStats = {};
+            recentMeetings.forEach(meeting => {
+                if (meeting.attendance) {
+                    meeting.attendance.filter(a => a.status === 'late').forEach(a => {
+                        lateStats[a.name] = (lateStats[a.name] || 0) + 1;
+                    });
+                }
+            });
+            
+            const lateHtml = Object.entries(lateStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([name, count]) => `<div style="margin-bottom: 5px;"><strong>${name}:</strong> ${count} раз${count > 1 ? 'а' : ''}</div>`)
+                .join('') || '<div style="color: #999;">Все приходят вовремя! 🎉</div>';
+            
+            document.getElementById('analyticsLate').innerHTML = lateHtml;
+            
+            // 2. ВРЕМЯ ВЫСТУПЛЕНИЙ (из текущей встречи)
+            const speakingHtml = Object.entries(speakerStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([name, seconds]) => {
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return `<div style="margin-bottom: 5px;"><strong>${name}:</strong> ${minutes}:${secs.toString().padStart(2, '0')}</div>`;
+                })
+                .join('') || '<div style="color: #999;">Начните выступления</div>';
+            
+            document.getElementById('analyticsSpeaking').innerHTML = speakingHtml;
+            
+            // 3. ВЫПОЛНЕНИЕ ЗАДАЧ
+            const taskStats = {};
+            recentMeetings.forEach(meeting => {
+                if (meeting.tasks) {
+                    meeting.tasks.forEach(task => {
+                        if (task.responsible) {
+                            if (!taskStats[task.responsible]) {
+                                taskStats[task.responsible] = { total: 0, closed: 0 };
+                            }
+                            taskStats[task.responsible].total++;
+                            if (task.closed) {
+                                taskStats[task.responsible].closed++;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            const taskHtml = Object.entries(taskStats)
+                .map(([name, stats]) => {
+                    const percent = Math.round((stats.closed / stats.total) * 100);
+                    const color = percent >= 80 ? '#28a745' : percent >= 50 ? '#ffc107' : '#dc3545';
+                    return `<div style="margin-bottom: 5px;"><strong>${name}:</strong> <span style="color: ${color}; font-weight: 600;">${percent}%</span> (${stats.closed}/${stats.total})</div>`;
+                })
+                .sort((a, b) => {
+                    const aPercent = parseInt(a.match(/(\d+)%/)[1]);
+                    const bPercent = parseInt(b.match(/(\d+)%/)[1]);
+                    return bPercent - aPercent;
+                })
+                .slice(0, 5)
+                .join('') || '<div style="color: #999;">Нет данных о задачах</div>';
+            
+            document.getElementById('analyticsTasks').innerHTML = taskHtml;
+            
+            // 4. АКТИВНОСТЬ ПО ЗАДАЧАМ (текущие открытые)
+            const activityStats = {};
+            openIssues.filter(i => !i.closed && i.responsible).forEach(issue => {
+                activityStats[issue.responsible] = (activityStats[issue.responsible] || 0) + 1;
+            });
+            
+            const activityHtml = Object.entries(activityStats)
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, count]) => {
+                    const types = openIssues.filter(i => !i.closed && i.responsible === name);
+                    const tasks = types.filter(i => i.type === 'task').length;
+                    const bottlenecks = types.filter(i => i.type === 'bottleneck').length;
+                    const growth = types.filter(i => i.type === 'growth').length;
+                    return `<div style="display: inline-block; margin: 5px 10px 5px 0; padding: 8px 12px; background: #e9ecef; border-radius: 6px;">
+                        <strong>${name}:</strong> 
+                        ${tasks > 0 ? `✅${tasks}` : ''} 
+                        ${bottlenecks > 0 ? `🔴${bottlenecks}` : ''} 
+                        ${growth > 0 ? `🟢${growth}` : ''}
+                    </div>`;
+                })
+                .join('') || '<div style="color: #999;">Нет активных задач</div>';
+            
+            document.getElementById('analyticsActivity').innerHTML = activityHtml;
+        }
+        
         function newMeeting() {
-            if (confirm('Начать новую встречу? Все незаполненные данные будут очищены.')) {
-                // Очистка
-                document.getElementById('vehiclesContainer').innerHTML = '';
-                document.getElementById('tasksContainer').innerHTML = '';
-                document.getElementById('bottlenecksContainer').innerHTML = '';
-                document.getElementById('growthPointsContainer').innerHTML = '';
-                document.getElementById('innovations').value = '';
-                document.getElementById('conclusions').value = '';
+            // Создаём модальное окно выбора
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.6);
+                z-index: 9998;
+                backdrop-filter: blur(4px);
+            `;
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                z-index: 9999;
+                width: 500px;
+                max-width: calc(100vw - 40px);
+                max-height: calc(100vh - 80px);
+                overflow-y: auto;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 16px 16px 0 0;">
+                    <h3 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px;">
+                        🆕 Новая встреча
+                    </h3>
+                    <p style="margin: 10px 0 0 0; font-size: 13px; opacity: 0.9;">Выберите, что нужно сбросить</p>
+                </div>
                 
-                // Сброс таймеров
+                <div style="padding: 25px;">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;" 
+                            onmouseover="this.style.borderColor='#667eea'; this.style.background='#e8ecff';" 
+                            onmouseout="this.style.borderColor='transparent'; this.style.background='#f8f9fa';">
+                            <input type="checkbox" id="reset_timers" checked style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 15px; margin-bottom: 3px;">⏱️ Таймеры встречи</div>
+                                <div style="font-size: 12px; color: #666;">Общий таймер встречи и время выступлений участников</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;" 
+                            onmouseover="this.style.borderColor='#667eea'; this.style.background='#e8ecff';" 
+                            onmouseout="this.style.borderColor='transparent'; this.style.background='#f8f9fa';">
+                            <input type="checkbox" id="reset_checklist" checked style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 15px; margin-bottom: 3px;">✅ Чеклист координации</div>
+                                <div style="font-size: 12px; color: #666;">Снять все галочки в чеклисте</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;" 
+                            onmouseover="this.style.borderColor='#667eea'; this.style.background='#e8ecff';" 
+                            onmouseout="this.style.borderColor='transparent'; this.style.background='#f8f9fa';">
+                            <input type="checkbox" id="reset_attendance" checked style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 15px; margin-bottom: 3px;">👥 Отметки присутствия</div>
+                                <div style="font-size: 12px; color: #666;">Очистить статусы (есть/опоздал/нет)</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;" 
+                            onmouseover="this.style.borderColor='#667eea'; this.style.background='#e8ecff';" 
+                            onmouseout="this.style.borderColor='transparent'; this.style.background='#f8f9fa';">
+                            <input type="checkbox" id="reset_fields" checked style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 15px; margin-bottom: 3px;">📝 Текстовые поля</div>
+                                <div style="font-size: 12px; color: #666;">Очистить нововведения и выводы</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <label style="display: flex; align-items: center; padding: 15px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; cursor: pointer; transition: all 0.2s;" 
+                            onmouseover="this.style.background='#ffe8a1';" 
+                            onmouseout="this.style.background='#fff3cd';">
+                            <input type="checkbox" id="reset_goals" style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 15px; margin-bottom: 3px; color: #856404;">🎯 Цели (план/факт)</div>
+                                <div style="font-size: 12px; color: #856404;">⚠️ Обнулить план и факт всех целей</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="cancelNewMeeting()" 
+                            style="flex: 1; padding: 14px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                            Отмена
+                        </button>
+                        <button onclick="confirmNewMeeting()" 
+                            style="flex: 2; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+                            🚀 Начать новую встречу
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            
+            // Сохраняем ссылки для доступа из других функций
+            window.newMeetingOverlay = overlay;
+            window.newMeetingModal = modal;
+        }
+        
+        function cancelNewMeeting() {
+            if (window.newMeetingOverlay) window.newMeetingOverlay.remove();
+            if (window.newMeetingModal) window.newMeetingModal.remove();
+        }
+        
+        function confirmNewMeeting() {
+            const resetTimers = document.getElementById('reset_timers').checked;
+            const resetChecklist = document.getElementById('reset_checklist').checked;
+            const resetAttendance = document.getElementById('reset_attendance').checked;
+            const resetFields = document.getElementById('reset_fields').checked;
+            const resetGoals = document.getElementById('reset_goals').checked;
+            
+            // Закрываем модалку
+            cancelNewMeeting();
+            
+            // Выполняем выбранные сбросы
+            if (resetTimers) {
                 totalSeconds = 0;
                 speakerSeconds = 0;
+                speakerStats = {};
+                currentSpeakerId = null;
                 stopTotalTimer();
                 stopSpeaker();
                 document.getElementById('totalTimer').textContent = '00:00';
                 document.getElementById('speakerTimer').textContent = '00:00';
+                document.getElementById('currentSpeaker').textContent = 'Никто не выступает';
                 
-                // Обновление даты и времени
-                document.getElementById('meetingDate').valueAsDate = new Date();
-                const now = new Date();
-                document.getElementById('startTime').value = now.toTimeString().substring(0, 5);
-                
-                // Перезагрузка
-                loadAttendanceList();
-                loadOpenIssues();
-                loadFocuses();
-                loadGoals();
-                resetChecklist();
-                
-                addVehicle();
-                addTask();
-                addBottleneck();
-                addGrowthPoint();
-                
-                window.scrollTo(0, 0);
-                alert('✅ Новая встреча началась!');
+                // Сброс таймеров участников
+                employees.forEach(emp => {
+                    if (!emp.stats) emp.stats = {};
+                    emp.stats.totalSpeakingTime = 0;
+                });
+                loadSpeakerControls();
             }
+            
+            if (resetChecklist) {
+                checklistItems.forEach(item => {
+                    item.completed = false;
+                });
+                localStorage.setItem('checklistItems', JSON.stringify(checklistItems));
+                loadChecklist();
+            }
+            
+            if (resetAttendance) {
+                loadAttendanceList();
+            }
+            
+            if (resetFields) {
+                document.getElementById('innovations').value = '';
+                document.getElementById('conclusions').value = '';
+            }
+            
+            if (resetGoals) {
+                goals.forEach(goal => {
+                    goal.plan = '';
+                    goal.fact = '';
+                });
+                localStorage.setItem('goals', JSON.stringify(goals));
+            }
+            
+            // Всегда обновляем дату и время
+            document.getElementById('meetingDate').valueAsDate = new Date();
+            const now = new Date();
+            document.getElementById('startTime').value = now.toTimeString().substring(0, 5);
+            
+            // Обновляем счётчик рабочих дней и получаем процент
+            const monthPercent = updateWorkingDays();
+            
+            // Обновляем отображение целей с правильным процентом месяца
+            loadGoalsWithPercent(monthPercent);
+            
+            // Очистка задач, узких мест, точек роста
+            document.getElementById('tasksContainer').innerHTML = '';
+            document.getElementById('bottlenecksContainer').innerHTML = '';
+            document.getElementById('growthPointsContainer').innerHTML = '';
+            
+            addTask();
+            addBottleneck();
+            addGrowthPoint();
+            
+            window.scrollTo(0, 0);
+            
+            // Красивое уведомление
+            const items = [];
+            if (resetTimers) items.push('⏱️ Таймеры');
+            if (resetChecklist) items.push('✅ Чеклист');
+            if (resetAttendance) items.push('👥 Присутствие');
+            if (resetFields) items.push('📝 Поля');
+            if (resetGoals) items.push('🎯 Цели');
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                text-align: center;
+                min-width: 300px;
+            `;
+            notification.innerHTML = `
+                <div style="font-size: 32px; margin-bottom: 10px;">🚀</div>
+                <div style="font-size: 18px; margin-bottom: 8px;">Новая встреча началась!</div>
+                <div style="font-size: 13px; opacity: 0.9;">
+                    Сброшено: ${items.join(', ')}
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>
