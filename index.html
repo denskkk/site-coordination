@@ -3256,12 +3256,14 @@
                             <label style="font-size: 11px; color: #666; display: block; margin-bottom: 3px;">План месяца:</label>
                             <input type="number" value="${goal.plan || ''}" placeholder="План" 
                                 onchange="updateGoalField(${goal.id}, 'plan', this.value); loadGoals();"
+                                oninput="updateGoalField(${goal.id}, 'plan', this.value); loadGoals();"
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
                         </div>
                         <div>
                             <label style="font-size: 11px; color: #666; display: block; margin-bottom: 3px;">Факт сейчас:</label>
                             <input type="number" value="${goal.fact || ''}" placeholder="Факт" 
                                 onchange="updateGoalField(${goal.id}, 'fact', this.value); loadGoals();"
+                                oninput="updateGoalField(${goal.id}, 'fact', this.value); loadGoals();"
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: 600;">
                         </div>
                         <div style="text-align: center;">
@@ -3691,6 +3693,9 @@
             document.getElementById('workingDaysLeft').textContent = leftWorkingDays;
             document.getElementById('workingDaysPercent').textContent = percentComplete + '%';
             
+            // Обновим отображение целей, чтобы пересчиталось отставание относительно нового процента месяца
+            try { loadGoalsWithPercent(percentComplete); } catch (e) { console.warn('loadGoalsWithPercent failed:', e); }
+
             // Возвращаем процент для использования в других функциях
             return percentComplete;
         }
